@@ -38,7 +38,6 @@
 # import the necessary modules
 import constants
 import matplotlib.pyplot as plt
-from matplotlib import gridspec
 import numpy as np
 import pandas as pd
 import plotly as py
@@ -66,9 +65,11 @@ run_df
 # Raw DayCent model output is spread across two files:
 # * .lis files contain information related to per-area biomass harvest and soil carbon
 # * year_summary.out contains per-area trace gas emissions
-# Most DayCent outputs are in units of grams of carbon per meter squared (g C m-2), though some of the nitrogen flux results are reported on a per-hectare basis instead.
+# Most DayCent outputs are in units of grams of carbon per meter squared (g C m-2), though some of the nitrogen flux results are reported on a per-hectare basis instead. 
 #
-# The code below loads these raw results into Pandas dataframes, merges them, and performs basic unit converions to express the results in more familiar units of kg or Mg per hectare.
+# The code below loads these raw results into Pandas dataframes, merges them, and performs basic unit converions to express the results in more familiar units of kg or Mg per hectare. 
+
+lis_df
 
 # +
 # loading data
@@ -79,7 +80,7 @@ ys_file = "year_summary.out"
 # ys_file = '/Volumes/wcnr-network/Public/RubelScratch/jlf/results/2019-09-16,13.26__eastern_US_runtable_incl81__79__CBI_baseline/year_summary.out'
 ys_df = pd.read_csv(ys_file, skiprows=[1])
 
-# merging .lis and year_summary.out results
+# merging .lis and year_summary.out results 
 annual_df = pd.merge(lis_df, ys_df, on=['strata_no', 'crop', 'land_type', 'time'])
 
 # unit conversions
@@ -97,7 +98,7 @@ annual_df['ghg_MgCO2e_ha'] = (annual_df['dSOC_MgC_ha'] * constants.C_to_CO2 * -1
 
 annual_df
 # print("Full list of raw and unit-convered DayCent output variables included in results:")
-# for col in results_df.columns:
+# for col in results_df.columns: 
 #     print(col)
 # -
 
@@ -192,47 +193,36 @@ def fips_mapping(df, title, column_mapped, legend_title, linspacing, divergent=F
 fips_mapping(county_df, 'Abandoned land availability', 'tot_ha', '(ha)', (0, 100000, 21))
 
 # ## Climate analysis
-# Here's some initial exploratory code to parse a DayCent-format weather file and analyze inter-annual variability in growing-season temperatures and precipitation.
+# Here's some initial exploratory code to parse a DayCent-format weather file and analyze inter-annual variability in growing-season temperatures and precipitation. 
 
 weather_file1 = "NARR_89_234.wth"
-weather_df1 = pd.read_csv(weather_file1, sep='\t', usecols=range(1, 7),
+weather_df1 = pd.read_csv(weather_file1, sep='\t',
                          names=['DayOfMonth','Month', "Year", "DayOfYear", 'Tmax_C', 'Tmin_C', "Precip_cm"])
 weather_file2 = "NARR_89_231.wth"
-weather_df2 = pd.read_csv(weather_file2, sep='\t', usecols=range(1, 7),
+weather_df2 = pd.read_csv(weather_file2, sep='\t',
                          names=['DayOfMonth','Month', "Year", "DayOfYear", 'Tmax_C', 'Tmin_C', "Precip_cm"])
 weather_df2
 
-wth_df = pd.merge(weather_df1, weather_df2, on=['Month', 'Year', 'DayOfYear'], suffixes=['_234', '_231'])
-seasonal_wth_df = wth_df[wth_df['Month'].isin([5, 6, 7, 8, 9])]
-seasonal_wth_df['Tavg_C_231'] = (seasonal_wth_df['Tmin_C_231'] + seasonal_wth_df['Tmax_C_231']) / 2.0
-seasonal_wth_df['Tavg_C_234'] = (seasonal_wth_df['Tmin_C_234'] + seasonal_wth_df['Tmax_C_234']) / 2.0
-annunal_wth_df = seasonal_wth_df.groupby('Year').agg({'Tmax_C_231': 'mean',
-                                                      'Tavg_C_231': 'mean',
-                                                      'Precip_cm_231': 'sum',
-                                                      'Tmax_C_234': 'mean',
-                                                      'Tavg_C_234': 'mean',
-                                                      'Precip_cm_234': 'sum'})
-annunal_wth_df['Precip_diff_cm'] = annunal_wth_df['Precip_cm_231'] - annunal_wth_df['Precip_cm_234']
-annunal_wth_df.head()
-
 # +
-fig = plt.figure()
-spec = gridspec.GridSpec(ncols=1, nrows=2, height_ratios=[1, 2])
-fig.suptitle("Difference between two weather grid centroids, 100km apart")
+seasonal_wth_df1 = weather_df1[weather_df1['Month'].isin([5, 6, 7, 8, 9])]
+seasonal_wth_df1['Tavg_C'] = (seasonal_wth_df1['Tmin_C'] + seasonal_wth_df1['Tmax_C']) / 2.0
+annunal_wth_df1 = seasonal_wth_df1.groupby('Year').agg({'Tmax_C': 'mean','Tavg_C': 'mean', 'Precip_cm': 'sum'})
+annunal_wth_df1 = annunal_wth_df1.reset_index()
 
-ax0 = fig.add_subplot(spec[0])
-ax0.bar(annunal_wth_df.index, annunal_wth_df.Precip_diff_cm)
-plt.setp(ax0.get_xticklabels(), visible=False)
-plt.ylabel("Difference (cm)")
-
-ax1 = fig.add_subplot(spec[1], sharex=ax0)
-ax1.plot(annunal_wth_df.Precip_cm_231)
-ax1.plot(annunal_wth_df.Precip_cm_234)
-plt.xlabel("Year")
-plt.ylabel("May–Sept. total precip (cm)")
+seasonal_wth_df2 = weather_df2[weather_df2['Month'].isin([5, 6, 7, 8, 9])]
+seasonal_wth_df2['Tavg_C'] = (seasonal_wth_df2['Tmin_C'] + seasonal_wth_df2['Tmax_C']) / 2.0
+annunal_wth_df2 = seasonal_wth_df2.groupby('Year').agg({'Tmax_C': 'mean','Tavg_C': 'mean', 'Precip_cm': 'sum'})
+annunal_wth_df2 = annunal_wth_df2.reset_index()
+annunal_wth_df2
 # -
 
-plt.scatter(annunal_wth_df.Tavg_C_231, annunal_wth_df.Precip_cm_231)
+plt.plot(annunal_wth_df1.Year, annunal_wth_df1.Precip_cm)
+plt.plot(annunal_wth_df2.Year, annunal_wth_df2.Precip_cm)
+plt.title("Difference between two weather grid centroids, 100km apart")
+plt.xlabel("Year")
+plt.ylabel("May–Sept. total precipitation (cm)")
+
+plt.scatter(annunal_wth_df1.Tavg_C, annunal_wth_df1.Precip_cm)
 plt.title("Inter-annual variability in growing season weather")
 plt.xlabel("May–Sept. average air temperature (C)")
 plt.ylabel("May–Sept. total precipitation (cm)")
