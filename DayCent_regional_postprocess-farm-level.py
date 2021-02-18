@@ -452,9 +452,8 @@ print(extrema_years)
 ##### At this point, need to loop through 'base' and 'drought_tol' scenarios separately
 
 fig, ax = plt.subplots(2, 1, sharex=True)
-plt.title("Farm-level inter-annual yield variability")
+fig.suptitle('{} farm-level yield variability'.format(cs))
 plt.xlabel("biomass yield (Ma ha-1)")
-plt.ylabel("number of DayCent strata")
 plt.legend(loc=3)
 
 varieties = ['base', 'drought_tol']
@@ -466,6 +465,8 @@ for i, variety in enumerate(varieties):
     hist_df = hist_df.pivot(index='strata_no', columns='time', values='yield_Mg_ha')
     
     hist_df.plot.hist(bins=40, alpha=0.5, ax=ax[i])
+    ax[i].set_title('{} variety'.format(variety), fontsize=10)
+    ax[i].set_ylabel("# strata", fontsize=10)
 # -
 
 # ## DayCent–BTS2016 comparison
