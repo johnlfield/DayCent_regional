@@ -359,8 +359,8 @@ mapping(county_df[county_df.variety == 'base'],
 
 county_sets = {"IA": ['Ringgold', 'Taylor', 'Union', 'Adams', 'Adair'],
                "TN": ['Maury', 'Marshall', 'Giles', 'Bedford', 'Moore'],
-               "PA": ['Adams', 'Cumberland', 'Franklin', 'York'], 
-               "KS": ['Cheyenne', 'Rawlins', 'Thomas', 'Sherman']}
+               "PA": ['Adams', 'Cumberland', 'Franklin', 'York']}
+# "KS": ['Cheyenne', 'Rawlins', 'Thomas', 'Sherman']
 
 # +
 # get fips codes for case study counties
@@ -416,7 +416,7 @@ cs_df
 # # Case study visualization
 
 ##### Set up case study visualization to run one-at-a-time based on specified case study?
-cs = 'KS'
+cs = 'IA'
 cs_file_suffix = '_case_study_2019-09-16,13.26_2019-11-01,00.37.csv'
 cs_df = pd.read_csv(cs+cs_file_suffix)
 cs_df
@@ -467,11 +467,11 @@ for i, variety in enumerate(varieties):
     hist_df.plot.hist(bins=40, alpha=0.5, ax=ax[i])
     ax[i].set_title('{} variety'.format(variety), fontsize=10)
     ax[i].set_ylabel("# strata", fontsize=10)
-# -
 
+# + [markdown] heading_collapsed=true
 # ## DayCent–BTS2016 comparison
 
-# +
+# + hidden=true
 # import BTS data
 bts_df = pd.read_excel("Bioenergy KDF Billion Ton Report County Level Data_2040-JLF.xlsx", sheet_name='SG & M_PA')
 bts_df.rename(columns={'Prod':'BTS_prod_Mg'}, inplace=True)
@@ -488,10 +488,11 @@ comp_df.plot.scatter(x='BTS_prod_Mg', y='daycent_prod_Mg')
 plt.xlabel("BTS2016 yield (Mg y-1)")
 plt.ylabel("DayCent yield (Mg y-1)")
 plt.title("Comparing county-level estimates from BTS2016 and DayCent")
-# -
+# + [markdown] heading_collapsed=true
 # # Climate analysis
 # Here's some initial exploratory code to parse a DayCent-format weather file and analyze inter-annual variability in growing-season temperatures and precipitation.
 
+# + hidden=true
 weather_file1 = "NARR_89_234.wth"
 weather_df1 = pd.read_csv(weather_file1, sep='\t', usecols=range(1, 7),
                          names=['DayOfMonth','Month', "Year", "DayOfYear", 'Tmax_C', 'Tmin_C', "Precip_cm"])
@@ -500,6 +501,7 @@ weather_df2 = pd.read_csv(weather_file2, sep='\t', usecols=range(1, 7),
                          names=['DayOfMonth','Month', "Year", "DayOfYear", 'Tmax_C', 'Tmin_C', "Precip_cm"])
 weather_df2
 
+# + hidden=true
 wth_df = pd.merge(weather_df1, weather_df2, on=['Month', 'Year', 'DayOfYear'], suffixes=['_234', '_231'])
 seasonal_wth_df = wth_df[wth_df['Month'].isin([5, 6, 7, 8, 9])]
 seasonal_wth_df['Tavg_C_231'] = (seasonal_wth_df['Tmin_C_231'] + seasonal_wth_df['Tmax_C_231']) / 2.0
@@ -513,7 +515,7 @@ annunal_wth_df = seasonal_wth_df.groupby('Year').agg({'Tmax_C_231': 'mean',
 annunal_wth_df['Precip_diff_cm'] = annunal_wth_df['Precip_cm_231'] - annunal_wth_df['Precip_cm_234']
 annunal_wth_df.head()
 
-# +
+# + hidden=true
 fig = plt.figure()
 spec = gridspec.GridSpec(ncols=1, nrows=2, height_ratios=[1, 2])
 fig.suptitle("Difference between two weather grid centroids, 100km apart")
@@ -528,8 +530,8 @@ ax1.plot(annunal_wth_df.Precip_cm_231)
 ax1.plot(annunal_wth_df.Precip_cm_234)
 plt.xlabel("Year")
 plt.ylabel("May–Sept. total precip (cm)")
-# -
 
+# + hidden=true
 plt.scatter(annunal_wth_df.Tavg_C_231, annunal_wth_df.Precip_cm_231)
 plt.title("Inter-annual variability in growing season weather")
 plt.xlabel("May–Sept. average air temperature (C)")
